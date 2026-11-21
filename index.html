@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Édito Leitner</title>
 <meta name="description" content="Leitner flashcards for Édito A1, A2 and B1 vocabulary with Persian meanings.">
 <link rel="manifest" href="manifest.webmanifest">
@@ -40,12 +40,14 @@
 
 *,*::before,*::after{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);background:var(--bg)}
-html,body{min-height:100%}
+html,body{min-height:100%;touch-action:manipulation;overflow-x:hidden}
 body{margin:0}
 img{max-width:100%}
 [hidden]{display:none!important}
 body{background:var(--bg);color:var(--ink);font:15px/1.5 var(--f-body);-webkit-tap-highlight-color:transparent}
 .wrap{max-width:560px;margin:0 auto;padding-block:14px 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:16px}
+html,body{overflow-x:hidden;touch-action:manipulation;-webkit-text-size-adjust:100%}
+button,label,.card,.item{touch-action:manipulation}
 button{font:inherit;color:inherit;cursor:pointer}
 button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .fa{font-family:var(--f-fa);direction:rtl;unicode-bidi:isolate}
@@ -110,8 +112,8 @@ header.top{display:flex;align-items:center;justify-content:space-between;gap:12p
 .prog i{display:block;height:100%;background:var(--accent);transition:width .25s}
 .count{font-size:13px;color:var(--muted)}
 
-.card{position:relative;display:grid;perspective:1400px;cursor:pointer;user-select:none}
-.face{grid-area:1/1;background:var(--surface);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);padding:20px;min-height:360px;display:flex;flex-direction:column;backface-visibility:hidden;-webkit-backface-visibility:hidden;transition:transform .45s cubic-bezier(.3,.7,.2,1)}
+.card{position:relative;display:grid;overflow:hidden;border-radius:22px;min-width:0;perspective:1400px;cursor:pointer;user-select:none}
+.face{grid-area:1/1;min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);padding:20px;min-height:360px;display:flex;flex-direction:column;backface-visibility:hidden;-webkit-backface-visibility:hidden;transition:transform .45s cubic-bezier(.3,.7,.2,1)}
 .face.back{transform:rotateY(180deg)}
 .card.flipped .front{transform:rotateY(-180deg)}
 .card.flipped .back{transform:rotateY(0)}
@@ -191,7 +193,7 @@ header.top{display:flex;align-items:center;justify-content:space-between;gap:12p
     <div class="sync" id="sync"><i></i><span>Loading…</span></div>
   </header>
   <div id="view"><div class="loading">Loading 3,123 words…</div></div>
-  <footer class="credit">Made by <b>Soroush</b></footer>
+  <footer class="credit" id="credit" hidden>Made by <b>Soroush</b></footer>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -286,13 +288,13 @@ function genderPair(id){const r=DATA[id],p=r[2],g=r[8],o=r[10]||'';
   const cell=(sex,word,cur,art)=>word?`<button class="gc ${sex}${cur?' cur':''}" data-sayt="${esc((art||'')+word)}"><span class="gl">${sex==='m'?'♂ masculin':'♀ féminin'}</span><span class="gw">${art?`<span class="art ${sex}">${esc(art)}</span>`:''}${esc(word)}</span></button>`
      :`<div class="gc ${sex} none"><span class="gl">${sex==='m'?'♂ masculin':'♀ féminin'}</span><span class="gw">${sex==='m'?'No masculine form':'No feminine form'}<br><span class="fa">${sex==='m'?'شکل مذکر ندارد':'شکل مؤنث ندارد'}</span></span></div>`;
   let m,f,am='',af='',cur,note='';
-  if(p==='adj'){m=r[0];f=o||r[0];cur='m';if(m===f)note='Same form for masculine and feminine · برای مذکر و مؤنث یکسان است'}
-  else if(g==='pm'||g==='pf'){return `<div class="gp"><div class="gnote">Plural noun: always <b>les ${esc(r[0])}</b> (${g==='pm'?'masc.':'fém.'}) · همیشه جمع</div></div>`}
+  if(p==='adj'){if(!o||o===r[0])return '';m=r[0];f=o;cur='m'}
+  else if(g==='pm'||g==='pf')return '';
+  else if((g==='m'||g==='f')&&!o)return '';
   else if(g==='e'){m=f=r[0];am=article(r[0],'m');af=article(r[0],'f');cur='m';note='Same word, only the article changes · فقط حرف تعریف عوض می‌شود'}
   else if(g==='m'){m=r[0];f=o;cur='m';am=article(m,'m');af=f?article(f,'f'):''}
   else if(g==='f'){f=r[0];m=o;cur='f';af=article(f,'f');am=m?article(m,'m'):''}
   else return '';
-  if(!o&&(g==='m'||g==='f')&&p==='n')note='Things and ideas have one fixed gender · اشیا و مفاهیم فقط یک جنس دارند';
   return `<div class="gp">${cell('m',m,cur==='m',am)}${cell('f',f,cur==='f',af)}${note?`<div class="gnote">${note}</div>`:''}</div>`}
 function boxOf(i){const p=S.p[i];return p?p[0]:0}
 
@@ -304,7 +306,7 @@ function stats(){const t=today(),b=[0,0,0,0,0,0,0];let due=0;
   return {b,due,newToday}}
 
 /* ---------- views ---------- */
-function render(){const v=$('#view');updateGreet();
+function render(){const v=$('#view');updateGreet();$('#credit').hidden=true;
   if(session){renderStudy();return}
   if(ready&&(!S.s.name||editingName)){renderName();return}
   v.innerHTML=`<div class="tabs" role="tablist">
@@ -314,7 +316,7 @@ function render(){const v=$('#view');updateGreet();
   v.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{tab=b.dataset.tab;render()});
   tab==='study'?renderHome():renderWords()}
 
-function renderName(){const first=!S.s.name;
+function renderName(){const first=!S.s.name;$('#credit').hidden=false;
   $('#view').innerHTML=`<section class="panel namebox">
     <h2>${first?'Bienvenue ! What’s your name?':'Change your name'}</h2>
     <input class="search" id="nm" maxlength="30" placeholder="Your first name" value="${esc(S.s.name||'')}" autocomplete="given-name">
@@ -325,7 +327,7 @@ function renderName(){const first=!S.s.name;
     S.s.name=v;S.s.t=Date.now();editingName=false;persist();render()};
   $('#saveName').onclick=save;inp.onkeydown=e=>{if(e.key==='Enter')save()};
   if($('#cancelName'))$('#cancelName').onclick=()=>{editingName=false;render()}}
-function renderHome(){const st=stats();const total=st.due+st.newToday;const max=Math.max(1,...st.b);
+function renderHome(){$('#credit').hidden=false;const st=stats();const total=st.due+st.newToday;const max=Math.max(1,...st.b);
   const names=['New','Box 1','Box 2','Box 3','Box 4','Box 5','Learned'];
   const lvCount=lv=>{let n=0,l=0;for(let i=0;i<DATA.length;i++)if(DATA[i][6]===lv){n++;if(boxOf(i)>=4)l++}return [n,l]};
   $('#pane').innerHTML=`<div style="display:flex;flex-direction:column;gap:16px;margin-top:16px">
@@ -452,7 +454,8 @@ function answer(ok){const s=session,id=s.q[s.pos],t=today(),r=DATA[id];
 
 function renderSummary(){const s=session;const missed=[...s.missed];
   $('#view').innerHTML=`<section class="panel" style="margin-top:4px">
-    <div class="brand" style="font-size:24px">Session done · آفرین!</div>
+    <div class="brand" style="font-size:28px">${s.right+s.wrong?['Félicitations','Bravo','Excellent travail','Super'][Math.floor(Math.random()*4)]:'À bientôt'}${S.s.name?', '+esc(S.s.name):''} !</div>
+    <div class="muted" style="margin-top:-8px">${s.right+s.wrong?(s.pos>=s.total&&s.q.length===s.pos?'Tu as terminé ta séance du jour.':'Séance terminée.'):'Aucune carte révisée.'}</div>
     <div class="sum">
       <div class="stat"><b class="num" style="color:var(--ok)">${s.right}</b><span>right</span></div>
       <div class="stat"><b class="num" style="color:var(--bad)">${s.wrong}</b><span>wrong</span></div>

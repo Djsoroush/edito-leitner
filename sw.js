@@ -1,5 +1,5 @@
 // Édito Leitner — offline cache. Bump VERSION when the files change.
-const VERSION = 'edito-v1';
+const VERSION = 'edito-v2';
 const CORE = ['./', 'index.html', 'vocab.json', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'apple-touch-icon.png'];
 
 self.addEventListener('install', e => {
