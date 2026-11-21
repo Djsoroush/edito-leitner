@@ -1,0 +1,505 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Édito Leitner</title>
+<meta name="description" content="Leitner flashcards for Édito A1, A2 and B1 vocabulary with Persian meanings.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Édito">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#eef1f6" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0f1420" media="(prefers-color-scheme: dark)">
+</head>
+<body>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Inter:wght@400;500;600&family=Vazirmatn:wght@400;600;700&display=swap">
+<style>
+/* Layout: one narrow column (phone first), a physical Leitner box strip on the home view, one flip card at a time while studying. */
+:root{
+  --bg:#eef1f6; --surface:#ffffff; --surface-2:#f6f8fb; --ink:#172033; --muted:#5d677d; --line:#d7dce6;
+  --accent:#2346c9; --accent-ink:#ffffff;
+  --masc:#2a63d4; --fem:#d23c5a; --ok:#1d8752; --bad:#c3413a; --gold:#b9840f;
+  --shadow:0 1px 2px rgba(23,32,51,.06),0 8px 24px rgba(23,32,51,.08);
+  --f-display:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;
+  --f-body:"Inter",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-fa:"Vazirmatn","Noto Naskh Arabic",Tahoma,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f1420; --surface:#182033; --surface-2:#1e2840; --ink:#e8ecf5; --muted:#9aa4ba; --line:#2b3550;
+  --accent:#7d97ff; --accent-ink:#0f1420; --masc:#7aa3ff; --fem:#ff8aa0; --ok:#4cc98a; --bad:#ff7d70; --gold:#f0bf4c;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.35); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1420; --surface:#182033; --surface-2:#1e2840; --ink:#e8ecf5; --muted:#9aa4ba; --line:#2b3550;
+  --accent:#7d97ff; --accent-ink:#0f1420; --masc:#7aa3ff; --fem:#ff8aa0; --ok:#4cc98a; --bad:#ff7d70; --gold:#f0bf4c;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.35); color-scheme:dark}
+
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);background:var(--bg)}
+html,body{min-height:100%}
+body{margin:0}
+img{max-width:100%}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 var(--f-body);-webkit-tap-highlight-color:transparent}
+.wrap{max-width:560px;margin:0 auto;padding-block:14px 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:16px}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.fa{font-family:var(--f-fa);direction:rtl;unicode-bidi:isolate}
+.muted{color:var(--muted)}
+.num{font-variant-numeric:tabular-nums}
+
+header.top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand{font:700 22px/1.1 var(--f-display);letter-spacing:-.01em}
+.greet{font:700 24px/1.15 var(--f-display);letter-spacing:-.01em;overflow-wrap:anywhere}
+.greet .who{color:var(--accent)}
+.greet button{border:0;background:none;padding:0 0 0 6px;font:500 12px var(--f-body);color:var(--muted);text-decoration:underline;vertical-align:middle}
+.sub{font-size:12px;color:var(--muted);margin-top:2px}
+.credit{text-align:center;font-size:11px;color:var(--muted);letter-spacing:.04em;padding-top:4px}
+.credit b{font-weight:600;color:var(--ink)}
+.namebox{display:flex;flex-direction:column;gap:12px}
+.namebox h2{margin:0;font:700 26px/1.2 var(--f-display);text-wrap:balance}
+.brand small{display:block;font:500 12px/1.3 var(--f-body);color:var(--muted);letter-spacing:.02em}
+.sync{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px;white-space:nowrap}
+.sync i{width:8px;height:8px;border-radius:50%;background:var(--muted);display:inline-block}
+.sync.on i{background:var(--ok)} .sync.warn i{background:var(--gold)}
+
+.tabs{display:grid;grid-template-columns:1fr 1fr;background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:3px}
+.tabs button{border:0;background:none;padding:9px;border-radius:9px;font-weight:600;color:var(--muted)}
+.tabs button[aria-selected="true"]{background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
+
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:14px}
+.label{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 14px;font-weight:600;font-size:14px}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.chip .c{font-weight:500;opacity:.75;margin-left:6px;font-size:12px}
+
+.today{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat{background:var(--surface-2);border-radius:12px;padding:12px}
+.stat b{display:block;font:700 30px/1 var(--f-display)}
+.stat span{font-size:13px;color:var(--muted)}
+.big{border:0;background:var(--accent);color:var(--accent-ink);border-radius:14px;padding:15px;font-weight:700;font-size:17px;width:100%}
+.big:disabled{opacity:.45;cursor:default}
+.row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.stepper{display:flex;align-items:center;gap:6px}
+.stepper button{width:34px;height:34px;border-radius:10px;border:1px solid var(--line);background:var(--surface);font-size:18px;line-height:1}
+.stepper output{min-width:34px;text-align:center;font-weight:700}
+.toggle{display:flex;align-items:center;gap:8px;font-size:14px}
+.toggle input{width:18px;height:18px;accent-color:var(--accent)}
+
+/* Leitner box strip */
+.boxes{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;align-items:end}
+.bx{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0}
+.bx .bar{width:100%;height:84px;border-radius:8px;background:var(--surface-2);border:1px solid var(--line);position:relative;overflow:hidden}
+.bx .fill{position:absolute;left:0;right:0;bottom:0;background:var(--accent);border-radius:0 0 7px 7px}
+.bx .n{font:700 14px/1 var(--f-display)}
+.bx .t{font-size:11px;color:var(--muted);text-align:center;line-height:1.2}
+.levels{display:flex;flex-direction:column;gap:8px}
+.lvl{display:grid;grid-template-columns:34px 1fr auto;gap:10px;align-items:center;font-size:13px}
+.track{height:8px;border-radius:99px;background:var(--surface-2);border:1px solid var(--line);overflow:hidden}
+.track i{display:block;height:100%;background:var(--ok)}
+
+/* Study view */
+.studybar{display:flex;align-items:center;gap:12px}
+.studybar .x{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:7px 12px;font-weight:600;font-size:14px}
+.prog{flex:1;height:8px;border-radius:99px;background:var(--surface-2);border:1px solid var(--line);overflow:hidden}
+.prog i{display:block;height:100%;background:var(--accent);transition:width .25s}
+.count{font-size:13px;color:var(--muted)}
+
+.card{position:relative;display:grid;perspective:1400px;cursor:pointer;user-select:none}
+.face{grid-area:1/1;background:var(--surface);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);padding:20px;min-height:360px;display:flex;flex-direction:column;backface-visibility:hidden;-webkit-backface-visibility:hidden;transition:transform .45s cubic-bezier(.3,.7,.2,1)}
+.face.back{transform:rotateY(180deg)}
+.card.flipped .front{transform:rotateY(-180deg)}
+.card.flipped .back{transform:rotateY(0)}
+@media (prefers-reduced-motion:reduce){.face{transition:none}}
+.status{align-self:flex-start;font-size:12px;font-weight:700;letter-spacing:.04em;border-radius:999px;padding:4px 10px;background:var(--surface-2);color:var(--muted);border:1px solid var(--line)}
+.status.new{background:var(--gold);border-color:var(--gold);color:var(--surface)}
+.status.again{background:var(--bad);border-color:var(--bad);color:var(--surface)}
+.front .mid{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center}
+.word{font:700 clamp(34px,10vw,48px)/1.08 var(--f-display);letter-spacing:-.01em;overflow-wrap:anywhere;text-wrap:balance}
+.ipa{font-size:18px;color:var(--muted);font-family:"Inter","Noto Sans","Segoe UI",sans-serif}
+.speak{border:1px solid var(--line);background:var(--surface-2);border-radius:999px;padding:8px 14px;display:inline-flex;align-items:center;gap:6px;font-weight:600;font-size:14px}
+.speak svg{width:18px;height:18px}
+.hint{text-align:center;font-size:13px;color:var(--muted)}
+
+.back .head{display:flex;align-items:flex-start;gap:14px}
+.pic{font-size:56px;line-height:1;flex:none}
+.bw{display:flex;flex-direction:column;gap:6px;min-width:0}
+.artword{font:700 28px/1.15 var(--f-display);overflow-wrap:anywhere}
+.art{font-weight:500}
+.art.m{color:var(--masc)} .art.f{color:var(--fem)} .art.e{color:var(--ink)}
+.tags{display:flex;flex-wrap:wrap;gap:6px}
+.tag{font-size:12px;font-weight:600;border-radius:6px;padding:3px 8px;background:var(--surface-2);border:1px solid var(--line)}
+.tag.m{color:var(--masc);border-color:var(--masc)} .tag.f{color:var(--fem);border-color:var(--fem)}
+.gp{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+.gc{border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:8px 10px;text-align:left;display:flex;flex-direction:column;gap:2px;min-width:0}
+.gc .gl{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+.gc.m .gl{color:var(--masc)} .gc.f .gl{color:var(--fem)}
+.gc .gw{font-weight:600;font-size:16px;overflow-wrap:anywhere}
+.gc.cur{border-width:2px}
+.gc.m.cur{border-color:var(--masc)} .gc.f.cur{border-color:var(--fem)}
+.gc.none{background:var(--surface-2);cursor:default}
+.gc.none .gw{color:var(--muted);font-weight:500;font-size:13px}
+.gnote{grid-column:1/-1;font-size:12px;color:var(--muted)}
+.meaning{font:700 30px/1.5 var(--f-fa);text-align:right;padding:6px 0 2px;border-top:1px solid var(--line);margin-top:14px}
+.ex{background:var(--surface-2);border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.ex .fr{font-size:16px;font-weight:500}
+.ex .fa{font-size:15px;color:var(--muted);text-align:right}
+.exrow{display:flex;gap:10px;align-items:flex-start;justify-content:space-between}
+.mini{border:1px solid var(--line);background:var(--surface);border-radius:999px;width:34px;height:34px;flex:none;display:grid;place-items:center}
+.mini svg{width:16px;height:16px}
+.back .foot{margin-top:auto;padding-top:12px;display:flex;gap:8px;align-items:center;justify-content:space-between}
+
+.answers{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.answers button{border:0;border-radius:14px;padding:15px 8px;font-weight:700;font-size:16px;color:#fff;display:flex;flex-direction:column;align-items:center;gap:2px}
+.answers .no{background:var(--bad)} .answers .yes{background:var(--ok)}
+.answers small{font-weight:500;font-size:12px;opacity:.9;font-family:var(--f-fa)}
+.reveal{border:1px solid var(--line);background:var(--surface);border-radius:14px;padding:15px;font-weight:700;font-size:16px;width:100%}
+.kbd{font-size:12px;color:var(--muted);text-align:center}
+@media (hover:none){.kbd{display:none}}
+
+.toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);opacity:0;background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-weight:600;font-size:14px;transition:.25s;pointer-events:none;max-width:calc(100% - 32px);text-align:center;z-index:5}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.toast.ok{background:var(--ok);color:#fff} .toast.bad{background:var(--bad);color:#fff}
+
+/* Summary */
+.sum{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.missed{display:flex;flex-direction:column;gap:6px}
+
+/* Words */
+.search{width:100%;box-sizing:border-box;min-width:0;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:12px;padding:11px 14px;font:inherit;font-size:16px}
+.list{display:flex;flex-direction:column}
+.item{display:grid;grid-template-columns:30px minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px 2px;border-bottom:1px solid var(--line);text-align:left;background:none;border-left:0;border-right:0;border-top:0;width:100%}
+.item .e{font-size:22px;text-align:center}
+.item .w{font-weight:600;overflow-wrap:anywhere}
+.item .w .fa{display:block;font-weight:400;color:var(--muted);font-size:14px;text-align:left;direction:rtl}
+.pill{font-size:11px;font-weight:700;border-radius:999px;padding:3px 8px;background:var(--surface-2);border:1px solid var(--line);white-space:nowrap}
+.pill.new{color:var(--muted)} .pill.hard{color:var(--bad);border-color:var(--bad)} .pill.done{color:var(--gold);border-color:var(--gold)}
+.more{font-size:13px;color:var(--muted);text-align:center;padding:10px}
+
+.danger{border:1px solid var(--line);background:none;border-radius:10px;padding:8px 12px;font-size:13px;color:var(--bad)}
+.loading{padding:60px 0;text-align:center;color:var(--muted)}
+</style>
+
+<div class="wrap" id="app">
+  <header class="top">
+    <div style="min-width:0"><div class="greet" id="greet">Édito Leitner</div><div class="sub">Édito Leitner · A1 · A2 · B1</div></div>
+    <div class="sync" id="sync"><i></i><span>Loading…</span></div>
+  </header>
+  <div id="view"><div class="loading">Loading 3,123 words…</div></div>
+  <footer class="credit">Made by <b>Soroush</b></footer>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+const SPK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>';
+const INT=[0,1,2,4,8,16];            // days until next review for boxes 1-5
+const MASTER_GAP=90;                 // box 6 (mastered) comes back after 90 days
+const LEVELS=['A1','A2','B1'];
+const POS={n:['nom','اسم'],v:['verbe','فعل'],adj:['adjectif','صفت'],adv:['adverbe','قید'],exp:['expression','عبارت'],num:['nombre','عدد'],prep:['préposition','حرف اضافه'],interj:['interjection','حرف ندا']};
+const GEN={m:['masc.','مذکر','m'],f:['fém.','مؤنث','f'],pm:['masc. pl.','مذکر جمع','m'],pf:['fém. pl.','مؤنث جمع','f'],e:['m. / f.','مذکر / مؤنث','e']};
+const H_ASP=new Set(['hockey','haricot','hamac','hamster','hall','hasard','hauteur','honte','hibou','homard','huit','hérisson','haut','hâte','hippopotame','héros','handball','hangar','harpe','haie','hache','halte','hareng','hanche','hiérarchie','hublot','hurlement']);
+
+let DATA=[]; // [w, ipa, pos, fa, exFr, exFa, level, unit, gender, emoji]
+const S={p:{}, s:{levels:['A1'],newPerDay:20,newDay:0,newCount:0,speakOnFlip:true,t:0}};
+let tab='study', session=null, ready=false, editingName=false;
+function salut(){const h=new Date().getHours();
+  return h>=5&&h<12?['Bonjour','Good morning']:h<18&&h>=12?['Bon après-midi','Good afternoon']:h>=18&&h<22?['Bonsoir','Good evening']:['Bonne nuit','Good night']}
+function updateGreet(){const el=$('#greet');if(!el)return;const n=S.s.name;const [fr,en]=salut();
+  if(!n){el.textContent='Édito Leitner';return}
+  el.innerHTML=`<span title="${en}">${fr},</span> <span class="who">${esc(n)}</span><button id="chg" aria-label="Change your name">edit</button>`;
+  $('#chg').onclick=()=>{editingName=true;session=null;render()}}
+setInterval(updateGreet,60000);
+function settle(){if(!ready){ready=true;render()}}
+
+const today=()=>{const d=new Date();return Math.floor((d.getTime()-d.getTimezoneOffset()*60000)/864e5)};
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ---------- local copy ---------- */
+const LKEY='edito-leitner-v1';
+function loadLocal(){try{const j=JSON.parse(localStorage.getItem(LKEY)||'null');if(j){Object.assign(S.p,j.p||{});Object.assign(S.s,j.s||{});}}catch(e){}}
+function saveLocal(){try{localStorage.setItem(LKEY,JSON.stringify(S))}catch(e){}}
+
+/* ---------- account sync (phone + laptop) ---------- */
+let db=null, uid=null, synced=false;
+const dirty=new Set(), inflight=new Set(); let timer=null;
+function setSync(cls,txt){const el=$('#sync');el.className='sync '+cls;el.querySelector('span').textContent=txt}
+function levelOf(id){return DATA[id][6]}
+function docFor(name){return db.collection('data/users/'+uid).doc(name)}
+function mergeCards(remote){let changed=false,newer=false;
+  for(const k in remote){const r=remote[k],l=S.p[k];if(!l||r[4]>l[4]){S.p[k]=r;changed=true}}
+  return changed}
+function markDirty(names){names.forEach(n=>dirty.add(n));if(!db)return;clearTimeout(timer);timer=setTimeout(flush,1500)}
+async function flush(){if(!db)return;
+  for(const name of [...dirty]){if(inflight.has(name))continue;dirty.delete(name);inflight.add(name);
+    try{let body;
+      if(name==='settings')body={s:S.s};
+      else{const c={};for(const k in S.p)if(levelOf(+k)===name.slice(2))c[k]=S.p[k];body={c,t:Date.now()}}
+      await docFor(name).set(body);setSync('on','Synced')}
+    catch(e){dirty.add(name);setSync('warn',e&&e.code==='quota_exceeded'?'Storage full':'Saved on this device');}
+    finally{inflight.delete(name)}}
+  if(dirty.size){clearTimeout(timer);timer=setTimeout(flush,4000)}}
+async function startSync(){
+  if(!window.claude||!claude.use){setSync('on',navigator.onLine?'Saved on this phone':'Offline · saved on this phone');settle();return}
+  const [d,u]=await Promise.all([claude.use('db'),claude.use('user')]);
+  uid=u?await u.id():null;
+  if(!d||!uid){setSync('warn','Saved on this device');settle();return}
+  db=d;setSync('','Syncing…');
+  const pending=new Set(['p-A1','p-A2','p-B1','settings']);
+  const to=setTimeout(()=>{if(pending.size)setSync('warn','Offline — saved on this device');settle()},10000);
+  for(const name of pending){
+    docFor(name).onSnapshot(snap=>{
+      const data=snap.exists?snap.data():null;let changed=false;
+      if(name==='settings'){if(data&&data.s&&(data.s.t||0)>(S.s.t||0)){Object.assign(S.s,data.s);changed=true}else if(!data||(data.s&&(data.s.t||0)<(S.s.t||0)))markDirty(['settings'])}
+      else{const rem=(data&&data.c)||{};changed=mergeCards(rem);
+        // anything newer here than in the account gets written back
+        const lv=name.slice(2);for(const k in S.p){if(levelOf(+k)!==lv)continue;const r=rem[k];if(!r||r[4]<S.p[k][4]){markDirty([name]);break}}}
+      if(!snap.metadata.fromCache){pending.delete(name);if(!pending.size){clearTimeout(to);synced=true;if(!dirty.size)setSync('on','Synced');settle()}}
+      if(changed){saveLocal();if(!session&&!(editingName||(!S.s.name&&$('#nm'))))render();else updateGreet()}
+    },err=>{setSync('warn','Saved on this device');settle()});
+  }
+}
+function persist(cardLevel){saveLocal();markDirty(cardLevel?['p-'+cardLevel,'settings']:['settings'])}
+
+/* ---------- speech ---------- */
+let voice=null;
+function pickVoice(){if(!('speechSynthesis' in window))return;const vs=speechSynthesis.getVoices();
+  voice=vs.find(v=>/^fr[-_]FR/i.test(v.lang)&&/Thomas|Amélie|Audrey|Google/i.test(v.name))||vs.find(v=>/^fr[-_]FR/i.test(v.lang))||vs.find(v=>/^fr/i.test(v.lang))||null}
+if('speechSynthesis' in window){pickVoice();speechSynthesis.onvoiceschanged=pickVoice}
+function say(text,rate){if(!('speechSynthesis' in window)||!text)return;try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang='fr-FR';if(voice)u.voice=voice;u.rate=rate||0.9;speechSynthesis.speak(u)}catch(e){}}
+
+/* ---------- word helpers ---------- */
+function article(w,g){if(!g)return '';const lw=w.toLowerCase();
+  if(g==='pm'||g==='pf')return 'les ';
+  const first=lw.normalize('NFD')[0];
+  const vowel=/[aeiouy]/.test(first)||(first==='h'&&!H_ASP.has(lw.split(/[\s-]/)[0]));
+  if(vowel)return "l'";
+  return g==='m'?'le ':g==='f'?'la ':'le / la '}
+function spoken(i){const r=DATA[i];return (r[2]==='n'?article(r[0],r[8]).replace(' / la',''):'')+r[0]}
+function genderPair(id){const r=DATA[id],p=r[2],g=r[8],o=r[10]||'';
+  if(p!=='adj'&&p!=='n')return '';
+  const cell=(sex,word,cur,art)=>word?`<button class="gc ${sex}${cur?' cur':''}" data-sayt="${esc((art||'')+word)}"><span class="gl">${sex==='m'?'♂ masculin':'♀ féminin'}</span><span class="gw">${art?`<span class="art ${sex}">${esc(art)}</span>`:''}${esc(word)}</span></button>`
+     :`<div class="gc ${sex} none"><span class="gl">${sex==='m'?'♂ masculin':'♀ féminin'}</span><span class="gw">${sex==='m'?'No masculine form':'No feminine form'}<br><span class="fa">${sex==='m'?'شکل مذکر ندارد':'شکل مؤنث ندارد'}</span></span></div>`;
+  let m,f,am='',af='',cur,note='';
+  if(p==='adj'){m=r[0];f=o||r[0];cur='m';if(m===f)note='Same form for masculine and feminine · برای مذکر و مؤنث یکسان است'}
+  else if(g==='pm'||g==='pf'){return `<div class="gp"><div class="gnote">Plural noun: always <b>les ${esc(r[0])}</b> (${g==='pm'?'masc.':'fém.'}) · همیشه جمع</div></div>`}
+  else if(g==='e'){m=f=r[0];am=article(r[0],'m');af=article(r[0],'f');cur='m';note='Same word, only the article changes · فقط حرف تعریف عوض می‌شود'}
+  else if(g==='m'){m=r[0];f=o;cur='m';am=article(m,'m');af=f?article(f,'f'):''}
+  else if(g==='f'){f=r[0];m=o;cur='f';af=article(f,'f');am=m?article(m,'m'):''}
+  else return '';
+  if(!o&&(g==='m'||g==='f')&&p==='n')note='Things and ideas have one fixed gender · اشیا و مفاهیم فقط یک جنس دارند';
+  return `<div class="gp">${cell('m',m,cur==='m',am)}${cell('f',f,cur==='f',af)}${note?`<div class="gnote">${note}</div>`:''}</div>`}
+function boxOf(i){const p=S.p[i];return p?p[0]:0}
+
+/* ---------- counts ---------- */
+function inLevels(i){return S.s.levels.includes(DATA[i][6])}
+function stats(){const t=today(),b=[0,0,0,0,0,0,0];let due=0;
+  for(let i=0;i<DATA.length;i++){if(!inLevels(i))continue;const p=S.p[i];if(!p){b[0]++;continue}b[p[0]]++;if(p[1]<=t)due++}
+  const used=S.s.newDay===t?S.s.newCount:0;const newToday=Math.min(b[0],Math.max(0,S.s.newPerDay-used));
+  return {b,due,newToday}}
+
+/* ---------- views ---------- */
+function render(){const v=$('#view');updateGreet();
+  if(session){renderStudy();return}
+  if(ready&&(!S.s.name||editingName)){renderName();return}
+  v.innerHTML=`<div class="tabs" role="tablist">
+      <button role="tab" aria-selected="${tab==='study'}" data-tab="study">Study · مرور</button>
+      <button role="tab" aria-selected="${tab==='words'}" data-tab="words">Words · لغات</button></div>
+    <div id="pane"></div>`;
+  v.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{tab=b.dataset.tab;render()});
+  tab==='study'?renderHome():renderWords()}
+
+function renderName(){const first=!S.s.name;
+  $('#view').innerHTML=`<section class="panel namebox">
+    <h2>${first?'Bienvenue ! What’s your name?':'Change your name'}</h2>
+    <input class="search" id="nm" maxlength="30" placeholder="Your first name" value="${esc(S.s.name||'')}" autocomplete="given-name">
+    <button class="big" id="saveName">${first?'Start learning':'Save'}</button>
+    ${first?'':'<button class="reveal" id="cancelName">Cancel</button>'}</section>`;
+  const inp=$('#nm');try{inp.focus()}catch(e){}
+  const save=()=>{const v=inp.value.trim().replace(/\s+/g,' ').slice(0,30);if(!v){inp.focus();return}
+    S.s.name=v;S.s.t=Date.now();editingName=false;persist();render()};
+  $('#saveName').onclick=save;inp.onkeydown=e=>{if(e.key==='Enter')save()};
+  if($('#cancelName'))$('#cancelName').onclick=()=>{editingName=false;render()}}
+function renderHome(){const st=stats();const total=st.due+st.newToday;const max=Math.max(1,...st.b);
+  const names=['New','Box 1','Box 2','Box 3','Box 4','Box 5','Learned'];
+  const lvCount=lv=>{let n=0,l=0;for(let i=0;i<DATA.length;i++)if(DATA[i][6]===lv){n++;if(boxOf(i)>=4)l++}return [n,l]};
+  $('#pane').innerHTML=`<div style="display:flex;flex-direction:column;gap:16px;margin-top:16px">
+    <section class="panel">
+      <div class="label">Levels · سطح</div>
+      <div class="chips">${LEVELS.map(l=>{let n=0;for(const r of DATA)if(r[6]===l)n++;return `<button class="chip" aria-pressed="${S.s.levels.includes(l)}" data-lv="${l}">Édito ${l}<span class="c num">${n}</span></button>`}).join('')}</div>
+      <div class="today">
+        <div class="stat"><b class="num">${st.due}</b><span>to review today<br><span class="fa">برای مرور</span></span></div>
+        <div class="stat"><b class="num">${st.newToday}</b><span>new words today<br><span class="fa">لغت جدید</span></span></div>
+      </div>
+      <button class="big" id="start" ${total?'':'disabled'}>${total?`Start · ${total} cards`:'All done for today ✓'}</button>
+    </section>
+    <section class="panel">
+      <div class="row"><div class="label">Leitner box · جعبه لایتنر</div><span class="muted" style="font-size:12px">Right → next box · Wrong → Box 1</span></div>
+      <div class="boxes">${st.b.map((n,i)=>`<div class="bx"><div class="n num">${n}</div><div class="bar"><div class="fill" style="height:${Math.round(n/max*100)}%;${i===0?'background:var(--muted);opacity:.35':i===6?'background:var(--gold)':`opacity:${.35+i*.13}`}"></div></div><div class="t">${names[i]}${i>=1&&i<=5?`<br>${INT[i]}d`:''}</div></div>`).join('')}</div>
+      <div class="levels">${LEVELS.map(lv=>{const [n,l]=lvCount(lv);return `<div class="lvl"><b>${lv}</b><div class="track"><i style="width:${(l/n*100).toFixed(1)}%"></i></div><span class="muted num" style="font-size:12px">${l} / ${n} in Box 4+</span></div>`}).join('')}</div>
+    </section>
+    <section class="panel">
+      <div class="row"><span>New words per day</span>
+        <div class="stepper"><button id="dn" aria-label="Fewer">−</button><output class="num" id="npd">${S.s.newPerDay}</output><button id="up" aria-label="More">+</button></div></div>
+      <label class="toggle"><input type="checkbox" id="sof" ${S.s.speakOnFlip?'checked':''}> Say the word aloud when I flip the card</label>
+      <div class="row"><span class="muted" style="font-size:13px">Progress is saved on this device. Use Back up / Restore to move it to another device.</span>
+        <button class="danger" id="reset">Reset progress</button></div>
+      <div class="row" style="justify-content:flex-start"><button class="chip" id="bk">Back up progress</button><label class="chip" for="rs" style="cursor:pointer">Restore from backup</label><input type="file" id="rs" accept=".json,application/json" hidden></div>
+    </section></div>`;
+  document.querySelectorAll('[data-lv]').forEach(b=>b.onclick=()=>{const l=b.dataset.lv;const set=new Set(S.s.levels);set.has(l)?set.delete(l):set.add(l);if(!set.size)return;S.s.levels=LEVELS.filter(x=>set.has(x));S.s.t=Date.now();persist();render()});
+  $('#start').onclick=startSession;
+  const step=d=>{S.s.newPerDay=Math.max(0,Math.min(100,S.s.newPerDay+d));S.s.t=Date.now();persist();render()};
+  $('#dn').onclick=()=>step(-5);$('#up').onclick=()=>step(5);
+  $('#sof').onchange=e=>{S.s.speakOnFlip=e.target.checked;S.s.t=Date.now();persist()};
+  $('#bk').onclick=()=>{const blob=new Blob([JSON.stringify({app:'edito-leitner',v:1,date:new Date().toISOString(),p:S.p,s:S.s})],{type:'application/json'});
+    const f=new File([blob],'edito-leitner-backup.json',{type:'application/json'});
+    if(navigator.canShare&&navigator.canShare({files:[f]})){navigator.share({files:[f],title:'Édito Leitner backup'}).catch(()=>{})}
+    else{const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='edito-leitner-backup.json';document.body.appendChild(a);a.click();a.remove()}};
+  $('#rs').onchange=e=>{const file=e.target.files[0];if(!file)return;file.text().then(t=>{const j=JSON.parse(t);if(j.app!=='edito-leitner'||!j.p)throw 0;
+      for(const k in j.p){const l=S.p[k];if(!l||j.p[k][4]>l[4])S.p[k]=j.p[k]}if(j.s&&(j.s.t||0)>(S.s.t||0))Object.assign(S.s,j.s);saveLocal();render();toast('Progress restored','ok')})
+    .catch(()=>toast('That file is not an Édito Leitner backup','bad'))};
+  const r=$('#reset');r.onclick=()=>{if(r.dataset.armed){
+      const t=Date.now();for(const k in S.p){if(inLevels(+k))delete S.p[k]}S.s.newCount=0;S.s.t=t;saveLocal();
+      if(db){S.s.levels.forEach(l=>dirty.add('p-'+l));markDirty(['settings'])}render();toast('Progress reset for '+S.s.levels.join(', '))}
+    else{r.dataset.armed=1;r.textContent='Tap again to reset '+S.s.levels.join(' + ');setTimeout(()=>{if(r.isConnected){delete r.dataset.armed;r.textContent='Reset progress'}},4000)}}}
+
+/* ---------- session ---------- */
+function startSession(){const t=today();const due=[],fresh=[];
+  for(let i=0;i<DATA.length;i++){if(!inLevels(i))continue;const p=S.p[i];if(p){if(p[1]<=t)due.push(i)}else fresh.push(i)}
+  due.sort((a,b)=>S.p[a][0]-S.p[b][0]||S.p[a][1]-S.p[b][1]);
+  const st=stats();const nw=fresh.slice(0,st.newToday);
+  const q=[];let a=0,b=0;while(a<due.length||b<nw.length){if(a<due.length)q.push(due[a++]);if(a<due.length)q.push(due[a++]);if(b<nw.length)q.push(nw[b++])}
+  session={q,pos:0,flipped:false,again:new Set(),requeued:{},right:0,wrong:0,learned:0,missed:new Set(),total:q.length};
+  render()}
+
+function renderStudy(){const v=$('#view');const s=session;
+  if(s.pos>=s.q.length){renderSummary();return}
+  const id=s.q[s.pos],r=DATA[id],p=S.p[id];
+  const isNew=!p,again=s.again.has(id);
+  const status=again?'<span class="status again">AGAIN · دوباره</span>':isNew?'<span class="status new">NEW · جدید</span>':`<span class="status">BOX ${p[0]===6?'★':p[0]} · REVIEW</span>`;
+  const g=GEN[r[8]],pos=POS[r[2]]||[r[2],''];
+  const art=r[2]==='n'?article(r[0],r[8]):'';
+  const done=s.pos,pct=Math.round(done/s.q.length*100);
+  v.innerHTML=`<div style="display:flex;flex-direction:column;gap:14px">
+    <div class="studybar"><button class="x" id="quit">✕ Stop</button><div class="prog"><i style="width:${pct}%"></i></div><span class="count num">${done} / ${s.q.length}</span></div>
+    <div class="card${s.flipped?' flipped':''}" id="card" tabindex="0" aria-label="Flashcard, tap to flip">
+      <div class="face front" aria-hidden="${s.flipped}">
+        ${status}
+        <div class="mid">
+          <div class="word">${esc(r[0])}</div>
+          ${r[1]?`<div class="ipa">/${esc(r[1])}/</div>`:''}
+          <button class="speak" data-say="w">${SPK} Listen</button>
+        </div>
+        <div class="hint">Tap the card to see the answer</div>
+      </div>
+      <div class="face back" aria-hidden="${!s.flipped}">
+        <div class="head">
+          ${r[9]?`<div class="pic" aria-hidden="true">${r[9]}</div>`:''}
+          <div class="bw">
+            <div class="artword">${art?`<span class="art ${g?g[2]:'e'}">${esc(art)}</span>`:''}${esc(r[0])}</div>
+            <div class="tags">
+              <span class="tag">${pos[0]} · <span class="fa">${pos[1]}</span></span>
+              ${r[2]==='n'&&g?`<span class="tag ${g[2]}">${g[0]} · <span class="fa">${g[1]}</span></span>`:''}
+              ${r[1]?`<span class="tag">/${esc(r[1])}/</span>`:''}
+            </div>
+          </div>
+        </div>
+        ${genderPair(id)}
+        <div class="meaning fa">${esc(r[3])}</div>
+        ${r[4]?`<div class="ex"><div class="exrow"><div class="fr">${esc(r[4])}</div><button class="mini" data-say="ex" aria-label="Listen to the example">${SPK}</button></div>${r[5]?`<div class="fa">${esc(r[5])}</div>`:''}</div>`:''}
+        <div class="foot"><button class="speak" data-say="w">${SPK} ${esc(spoken(id))}</button><span class="muted" style="font-size:12px">Édito ${r[6]} · Unité ${r[7]}</span></div>
+      </div>
+    </div>
+    ${s.flipped?`<div class="answers"><button class="no" id="no">✗ Didn't know<small>بلد نبودم</small></button><button class="yes" id="yes">✓ I knew it<small>بلد بودم</small></button></div>`
+               :`<button class="reveal" id="flip">Show answer</button>`}
+    <div class="kbd">Space: flip · ←: didn't know · →: knew it</div></div>`;
+  const card=$('#card');
+  card.onclick=e=>{if(e.target.closest('[data-say]'))return;flip()};
+  v.querySelectorAll('[data-sayt]').forEach(b=>b.onclick=e=>{e.stopPropagation();say(b.dataset.sayt,0.85)});
+  v.querySelectorAll('[data-say]').forEach(b=>b.onclick=e=>{e.stopPropagation();say(b.dataset.say==='ex'?r[4]:spoken(id),b.dataset.say==='ex'?0.95:0.85)});
+  $('#quit').onclick=()=>{session.q=session.q.slice(0,session.pos);renderSummary()};
+  if($('#flip'))$('#flip').onclick=flip;
+  if($('#no'))$('#no').onclick=()=>answer(false);
+  if($('#yes'))$('#yes').onclick=()=>answer(true);
+}
+function flip(){if(!session||session.flipped)return;session.flipped=true;renderStudy();
+  if(S.s.speakOnFlip)say(spoken(session.q[session.pos]),0.85)}
+
+function answer(ok){const s=session,id=s.q[s.pos],t=today(),r=DATA[id];
+  const cur=S.p[id],isNew=!cur,again=s.again.has(id);
+  let box,due,msg;
+  const rc=(cur?cur[2]:0)+(ok?1:0),wc=(cur?cur[3]:0)+(ok?0:1);
+  if(ok){
+    if(isNew){box=2;due=t+INT[2];msg='✓ New word → Box 2 · back in 2 days'}
+    else if(again){box=1;due=t+1;msg='✓ Got it · Box 1 · back tomorrow'}
+    else{box=Math.min(cur[0]+1,6);due=box===6?t+MASTER_GAP:t+INT[box];msg=box===6?'★ Learned! Out of the box':`✓ Box ${box} · back in ${INT[box]} day${INT[box]>1?'s':''}`}
+    s.right++;if(isNew)s.learned++;
+  }else{
+    box=1;due=t;msg=isNew?'✗ New word → Box 1 · you’ll see it again soon':'✗ Back to Box 1 · coming back in a few cards';
+    s.wrong++;s.missed.add(id);s.again.add(id);if(isNew)s.learned++;
+    const n=(s.requeued[id]||0);if(n<3){s.requeued[id]=n+1;s.q.splice(Math.min(s.pos+5,s.q.length),0,id)}
+  }
+  if(isNew){if(S.s.newDay!==t){S.s.newDay=t;S.s.newCount=0}S.s.newCount++;S.s.t=Date.now()}
+  S.p[id]=[box,due,rc,wc,Date.now()];
+  persist(r[6]);
+  toast(msg,ok?'ok':'bad');
+  s.pos++;s.flipped=false;renderStudy()}
+
+function renderSummary(){const s=session;const missed=[...s.missed];
+  $('#view').innerHTML=`<section class="panel" style="margin-top:4px">
+    <div class="brand" style="font-size:24px">Session done · آفرین!</div>
+    <div class="sum">
+      <div class="stat"><b class="num" style="color:var(--ok)">${s.right}</b><span>right</span></div>
+      <div class="stat"><b class="num" style="color:var(--bad)">${s.wrong}</b><span>wrong</span></div>
+      <div class="stat"><b class="num" style="color:var(--gold)">${s.learned}</b><span>new words</span></div>
+    </div>
+    ${missed.length?`<div class="label">Words to watch · لغت‌های سخت</div><div class="missed list">${missed.map(rowHTML).join('')}</div>`:''}
+    <button class="big" id="home">Back to my boxes</button></section>`;
+  bindRows();$('#home').onclick=()=>{session=null;render()}}
+
+/* ---------- words list ---------- */
+let q='',filt='all';
+function rowHTML(i){const r=DATA[i],b=boxOf(i),p=S.p[i];
+  const pill=!p?'<span class="pill new">New</span>':b===6?'<span class="pill done">★ Learned</span>':p[3]>p[2]&&b<=2?`<span class="pill hard">Box ${b} · hard</span>`:`<span class="pill">Box ${b}</span>`;
+  const art=r[2]==='n'?article(r[0],r[8]):'';const g=GEN[r[8]];
+  return `<button class="item" data-i="${i}"><span class="e" aria-hidden="true">${r[9]||''}</span><span class="w">${art?`<span class="art ${g?g[2]:'e'}">${esc(art)}</span>`:''}${esc(r[0])}${r[10]&&r[10]!==r[0]?`<span class="muted" style="font-weight:400"> / ${esc(r[10])}</span>`:''}<span class="fa">${esc(r[3])}</span></span>${pill}</button>`}
+function bindRows(){document.querySelectorAll('.item').forEach(b=>b.onclick=()=>say(spoken(+b.dataset.i),0.85))}
+function renderWords(){
+  $('#pane').innerHTML=`<div style="display:flex;flex-direction:column;gap:12px;margin-top:16px">
+    <input class="search" id="q" type="search" placeholder="Search French or فارسی…" value="${esc(q)}" autocomplete="off">
+    <div class="chips">${[['all','All'],['hard','Hard'],['learning','In boxes'],['done','Learned'],['new','New']].map(([k,l])=>`<button class="chip" aria-pressed="${filt===k}" data-f="${k}">${l}</button>`).join('')}</div>
+    <div class="list" id="list"></div></div>`;
+  const draw=()=>{const ql=q.trim().toLowerCase();const out=[];let n=0;
+    for(let i=0;i<DATA.length;i++){if(!inLevels(i))continue;const r=DATA[i],p=S.p[i],b=p?p[0]:0;
+      if(filt==='new'&&p)continue;if(filt==='done'&&b!==6)continue;if(filt==='learning'&&!(b>=1&&b<=5))continue;if(filt==='hard'&&!(p&&p[3]>0&&b<=2))continue;
+      if(ql&&!(r[0].toLowerCase().includes(ql)||r[3].includes(q.trim())))continue;
+      n++;if(out.length<150)out.push(i)}
+    $('#list').innerHTML=out.map(rowHTML).join('')+(n>150?`<div class="more">Showing 150 of ${n} — search to narrow down</div>`:n?'':'<div class="more">No words here yet.</div>');bindRows()};
+  $('#q').oninput=e=>{q=e.target.value;draw()};
+  document.querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{filt=b.dataset.f;renderWords()});
+  draw()}
+
+/* ---------- toast & keys ---------- */
+let tt;function toast(m,c){const el=$('#toast');el.textContent=m;el.className='toast show '+(c||'');clearTimeout(tt);tt=setTimeout(()=>el.className='toast',1900)}
+document.addEventListener('keydown',e=>{if(!session||e.target.tagName==='INPUT')return;
+  if(e.key===' '||e.key==='Enter'){e.preventDefault();session.flipped?null:flip()}
+  else if(session.flipped&&(e.key==='ArrowLeft'||e.key==='1'))answer(false)
+  else if(session.flipped&&(e.key==='ArrowRight'||e.key==='2'))answer(true)});
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&dirty.size)flush()});
+
+/* ---------- offline ---------- */
+if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}))}
+window.addEventListener('online',()=>setSync('on','Saved on this phone'));window.addEventListener('offline',()=>setSync('on','Offline · saved on this phone'));
+/* ---------- boot ---------- */
+loadLocal();
+fetch('vocab.json').then(r=>r.json()).then(d=>{DATA=d;render();startSync()})
+  .catch(()=>{$('#view').innerHTML='<div class="loading">The word list could not load. Reload the page to try again.</div>'});
+</script>
+
+</body>
+</html>
