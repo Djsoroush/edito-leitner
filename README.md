@@ -17,11 +17,11 @@
 </div>
 
 <p align="center">
-  <img src="docs/home.png" alt="Home screen with today's reviews and the Leitner boxes" width="250">
+  <img src="home.png" alt="Home screen with today's reviews and the Leitner boxes" width="250">
   &nbsp;
-  <img src="docs/front.png" alt="Front of a card: the word and its pronunciation" width="250">
+  <img src="front.png" alt="Front of a card: the word and its pronunciation" width="250">
   &nbsp;
-  <img src="docs/back.png" alt="Back of a card: Persian meaning, masculine and feminine forms, example sentence" width="250">
+  <img src="back.png" alt="Back of a card: Persian meaning, masculine and feminine forms, example sentence" width="250">
 </p>
 
 ---
@@ -100,7 +100,7 @@ vocab.json             3,123 words: word, IPA, part of speech, Persian, example,
 sw.js                  service worker that caches everything for offline use
 manifest.webmanifest   app name, icon and full-screen mode
 icon-*.png             app icons
-docs/                  screenshots for this page
+home.png  front.png  back.png   screenshots for this page
 ```
 
 ## Credits
