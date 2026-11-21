@@ -5,6 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Édito Leitner</title>
 <meta name="description" content="Leitner flashcards for Édito A1, A2 and B1 vocabulary with Persian meanings.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Édito Leitner">
+<meta property="og:title" content="Édito Leitner — French flashcards">
+<meta property="og:description" content="3,123 Édito A1–B1 words with Persian meanings, audio and a Leitner box. Free, works offline on iPhone.">
+<meta property="og:url" content="https://djsoroush.github.io/edito-leitner/">
+<meta property="og:image" content="https://djsoroush.github.io/edito-leitner/share.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" href="icon-192.png">
@@ -54,9 +63,10 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 .muted{color:var(--muted)}
 .num{font-variant-numeric:tabular-nums}
 
-header.top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+header.top{display:flex;align-items:center;min-height:44px;padding-top:12px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:10}
 .brand{font:700 22px/1.1 var(--f-display);letter-spacing:-.01em}
-.greet{font:700 24px/1.15 var(--f-display);letter-spacing:-.01em;overflow-wrap:anywhere}
+.greet{font:700 26px/1.2 var(--f-display);letter-spacing:-.01em;overflow-wrap:anywhere}
 .greet .who{color:var(--accent)}
 .greet button{border:0;background:none;padding:0 0 0 6px;font:500 12px var(--f-body);color:var(--muted);text-decoration:underline;vertical-align:middle}
 .sub{font-size:12px;color:var(--muted);margin-top:2px}
@@ -189,8 +199,7 @@ header.top{display:flex;align-items:center;justify-content:space-between;gap:12p
 
 <div class="wrap" id="app">
   <header class="top">
-    <div style="min-width:0"><div class="greet" id="greet">Édito Leitner</div><div class="sub">Édito Leitner · A1 · A2 · B1</div></div>
-    <div class="sync" id="sync"><i></i><span>Loading…</span></div>
+    <div class="greet" id="greet">Édito Leitner</div>
   </header>
   <div id="view"><div class="loading">Loading 3,123 words…</div></div>
   <footer class="credit" id="credit" hidden>Made by <b>Soroush</b></footer>
@@ -213,8 +222,7 @@ function salut(){const h=new Date().getHours();
   return h>=5&&h<12?['Bonjour','Good morning']:h<18&&h>=12?['Bon après-midi','Good afternoon']:h>=18&&h<22?['Bonsoir','Good evening']:['Bonne nuit','Good night']}
 function updateGreet(){const el=$('#greet');if(!el)return;const n=S.s.name;const [fr,en]=salut();
   if(!n){el.textContent='Édito Leitner';return}
-  el.innerHTML=`<span title="${en}">${fr},</span> <span class="who">${esc(n)}</span><button id="chg" aria-label="Change your name">edit</button>`;
-  $('#chg').onclick=()=>{editingName=true;session=null;render()}}
+  el.innerHTML=`<span title="${en}">${fr},</span> <span class="who">${esc(n)}</span>`}
 setInterval(updateGreet,60000);
 function settle(){if(!ready){ready=true;render()}}
 
@@ -230,7 +238,7 @@ function saveLocal(){try{localStorage.setItem(LKEY,JSON.stringify(S))}catch(e){}
 /* ---------- account sync (phone + laptop) ---------- */
 let db=null, uid=null, synced=false;
 const dirty=new Set(), inflight=new Set(); let timer=null;
-function setSync(cls,txt){const el=$('#sync');el.className='sync '+cls;el.querySelector('span').textContent=txt}
+let syncState=['','Loading…'];function setSync(cls,txt){syncState=[cls,txt];const el=$('#sync');if(!el)return;el.className='sync '+cls;el.querySelector('span').textContent=txt}
 function levelOf(id){return DATA[id][6]}
 function docFor(name){return db.collection('data/users/'+uid).doc(name)}
 function mergeCards(remote){let changed=false,newer=false;
@@ -351,10 +359,12 @@ function renderHome(){$('#credit').hidden=false;const st=stats();const total=st.
       <label class="toggle"><input type="checkbox" id="sof" ${S.s.speakOnFlip?'checked':''}> Say the word aloud when I flip the card</label>
       <div class="row"><span class="muted" style="font-size:13px">Progress is saved on this device. Use Back up / Restore to move it to another device.</span>
         <button class="danger" id="reset">Reset progress</button></div>
+      <div class="row"><div class="sync ${syncState[0]}" id="sync"><i></i><span>${esc(syncState[1])}</span></div><button class="chip" id="chg">Change name</button></div>
       <div class="row" style="justify-content:flex-start"><button class="chip" id="bk">Back up progress</button><label class="chip" for="rs" style="cursor:pointer">Restore from backup</label><input type="file" id="rs" accept=".json,application/json" hidden></div>
     </section></div>`;
   document.querySelectorAll('[data-lv]').forEach(b=>b.onclick=()=>{const l=b.dataset.lv;const set=new Set(S.s.levels);set.has(l)?set.delete(l):set.add(l);if(!set.size)return;S.s.levels=LEVELS.filter(x=>set.has(x));S.s.t=Date.now();persist();render()});
   $('#start').onclick=startSession;
+  $('#chg').onclick=()=>{editingName=true;render()};
   const step=d=>{S.s.newPerDay=Math.max(0,Math.min(100,S.s.newPerDay+d));S.s.t=Date.now();persist();render()};
   $('#dn').onclick=()=>step(-5);$('#up').onclick=()=>step(5);
   $('#sof').onchange=e=>{S.s.speakOnFlip=e.target.checked;S.s.t=Date.now();persist()};
