@@ -134,6 +134,14 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 @media (prefers-reduced-motion:reduce){.face{transition:none}}
 .status{align-self:flex-start;font-size:12px;font-weight:700;letter-spacing:.04em;border-radius:999px;padding:4px 10px;background:var(--surface-2);color:var(--muted);border:1px solid var(--line)}
 .status.new{background:var(--gold);border-color:var(--gold);color:var(--surface)}
+.status.practice{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.pgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.pbtn{border:1px solid var(--line);background:var(--surface-2);border-radius:12px;padding:10px 12px;text-align:left;display:flex;flex-direction:column;gap:2px;min-width:0}
+.pbtn b{font:700 20px/1 var(--f-display)}
+.pbtn span{font-size:13px;font-weight:600}
+.pbtn small{font-size:12px;color:var(--muted)}
+.pbtn:disabled{opacity:.45;cursor:default}
+.pbtn.wide{grid-column:1/-1}
 .status.again{background:var(--bad);border-color:var(--bad);color:var(--surface)}
 .front .mid{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center}
 .word{font:700 clamp(34px,10vw,48px)/1.08 var(--f-display);letter-spacing:-.01em;overflow-wrap:anywhere;text-wrap:balance}
@@ -341,7 +349,7 @@ function renderName(){const first=!S.s.name;$('#credit').hidden=false;
     S.s.name=v;S.s.t=Date.now();editingName=false;persist();render()};
   $('#saveName').onclick=save;inp.onkeydown=e=>{if(e.key==='Enter')save()};
   if($('#cancelName'))$('#cancelName').onclick=()=>{editingName=false;render()}}
-function renderHome(){$('#credit').hidden=false;const st=stats();const total=st.due+st.newToday;const max=Math.max(1,...st.b);
+function renderHome(){const PL=practiceLists();$('#credit').hidden=false;const st=stats();const total=st.due+st.newToday;const max=Math.max(1,...st.b);
   const names=['New','Box 1','Box 2','Box 3','Box 4','Box 5','Learned'];
   const lvCount=lv=>{let n=0,l=0;for(let i=0;i<DATA.length;i++)if(DATA[i][6]===lv){n++;if(boxOf(i)>=4)l++}return [n,l]};
   $('#pane').innerHTML=`<div style="display:flex;flex-direction:column;gap:16px;margin-top:16px">
@@ -353,6 +361,10 @@ function renderHome(){$('#credit').hidden=false;const st=stats();const total=st.
         <div class="stat"><b class="num">${st.newToday}</b><span>new words today<br><span class="fa">لغت جدید</span></span></div>
       </div>
       <button class="big" id="start" ${total?'':'disabled'}>${total?`Start · ${total} cards`:'All done for today ✓'}</button>
+    </section>
+    <section class="panel">
+      <div class="row"><div class="label">Practice · تمرین</div><span class="muted" style="font-size:12px">Extra review · your boxes don't change</span></div>
+      <div class="pgrid">${['today','wrong','right','hard','seen'].map(k=>{const n=PL[k].length;return `<button class="pbtn${k==='seen'?' wide':''}" data-pr="${k}" ${n?'':'disabled'}><b class="num">${n}</b><span>${PRACTICE[k][0]}</span><small class="fa" style="text-align:left">${PRACTICE[k][1]}</small></button>`}).join('')}</div>
     </section>
     <section class="panel">
       <div class="row"><div class="label">Leitner box · جعبه لایتنر</div><span class="muted" style="font-size:12px">Right → next box · Wrong → Box 1</span></div>
@@ -369,6 +381,7 @@ function renderHome(){$('#credit').hidden=false;const st=stats();const total=st.
     </section></div>`;
   document.querySelectorAll('[data-lv]').forEach(b=>b.onclick=()=>{const l=b.dataset.lv;const set=new Set(S.s.levels);set.has(l)?set.delete(l):set.add(l);if(!set.size)return;S.s.levels=LEVELS.filter(x=>set.has(x));S.s.t=Date.now();persist();render()});
   $('#start').onclick=startSession;
+  document.querySelectorAll('[data-pr]').forEach(b=>b.onclick=()=>startPractice(PL[b.dataset.pr],b.dataset.pr));
   const step=d=>{S.s.newPerDay=Math.max(0,Math.min(100,S.s.newPerDay+d));S.s.t=Date.now();persist();render()};
   $('#dn').onclick=()=>step(-5);$('#up').onclick=()=>step(5);
   $('#sof').onchange=e=>{S.s.speakOnFlip=e.target.checked;S.s.t=Date.now();persist()};
@@ -384,6 +397,17 @@ function renderHome(){$('#credit').hidden=false;const st=stats();const total=st.
       if(db){S.s.levels.forEach(l=>dirty.add('p-'+l));markDirty(['settings'])}render();toast('Progress reset for '+S.s.levels.join(', '))}
     else{r.dataset.armed=1;r.textContent='Tap again to reset '+S.s.levels.join(' + ');setTimeout(()=>{if(r.isConnected){delete r.dataset.armed;r.textContent='Reset progress'}},4000)}}}
 
+/* ---------- practice (extra review, boxes never change) ---------- */
+const dayOf=ts=>{const d=new Date(ts);return Math.floor((ts-d.getTimezoneOffset()*60000)/864e5)};
+function practiceLists(){const t=today(),L={today:[],wrong:[],right:[],hard:[],seen:[]};
+  for(let i=0;i<DATA.length;i++){if(!inLevels(i))continue;const p=S.p[i];if(!p)continue;L.seen.push(i);
+    if(p[3]>=2)L.hard.push(i);
+    if(dayOf(p[4])===t){L.today.push(i);if(p[6]===t)L.wrong.push(i);else if(p.length>5)L.right.push(i)}}
+  return L}
+const PRACTICE={today:["Today's words","لغت‌های امروز"],wrong:["Today's mistakes","اشتباه‌های امروز"],right:["Today's correct","درست‌های امروز"],hard:['Hard words','لغت‌های سخت'],seen:['All learned words','همه‌ی لغت‌های دیده‌شده']};
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function startPractice(ids,key){const q=shuffle(ids).slice(0,key==='seen'||key==='hard'?50:ids.length);if(!q.length)return;
+  session={practice:key,q,pos:0,flipped:false,again:new Set(),requeued:{},right:0,wrong:0,learned:0,missed:new Set(),total:q.length};render()}
 /* ---------- session ---------- */
 function startSession(){const t=today();const due=[],fresh=[];
   for(let i=0;i<DATA.length;i++){if(!inLevels(i))continue;const p=S.p[i];if(p){if(p[1]<=t)due.push(i)}else fresh.push(i)}
@@ -397,7 +421,7 @@ function renderStudy(){const v=$('#view');const s=session;
   if(s.pos>=s.q.length){renderSummary();return}
   const id=s.q[s.pos],r=DATA[id],p=S.p[id];
   const isNew=!p,again=s.again.has(id);
-  const status=again?'<span class="status again">AGAIN · دوباره</span>':isNew?'<span class="status new">NEW · جدید</span>':`<span class="status">BOX ${p[0]===6?'★':p[0]} · REVIEW</span>`;
+  const status=s.practice?`<span class="status practice">PRACTICE · ${esc(PRACTICE[s.practice][0])}</span>`:again?'<span class="status again">AGAIN · دوباره</span>':isNew?'<span class="status new">NEW · جدید</span>':`<span class="status">BOX ${p[0]===6?'★':p[0]} · REVIEW</span>`;
   const g=GEN[r[8]],pos=POS[r[2]]||[r[2],''];
   const art=r[2]==='n'?article(r[0],r[8]):'';
   const done=s.pos,pct=Math.round(done/s.q.length*100);
@@ -447,6 +471,9 @@ function flip(){if(!session||session.flipped)return;session.flipped=true;renderS
   if(S.s.speakOnFlip)say(spoken(session.q[session.pos]),0.85)}
 
 function answer(ok){const s=session,id=s.q[s.pos],t=today(),r=DATA[id];
+  if(s.practice){if(ok){s.right++;toast('✓ Correct · boxes unchanged','ok')}else{s.wrong++;s.missed.add(id);toast('✗ Missed · it comes back in a few cards','bad');
+      const n=(s.requeued[id]||0);if(n<2){s.requeued[id]=n+1;s.q.splice(Math.min(s.pos+4,s.q.length),0,id)}}
+    s.pos++;s.flipped=false;renderStudy();return}
   const cur=S.p[id],isNew=!cur,again=s.again.has(id);
   let box,due,msg;
   const rc=(cur?cur[2]:0)+(ok?1:0),wc=(cur?cur[3]:0)+(ok?0:1);
@@ -461,7 +488,7 @@ function answer(ok){const s=session,id=s.q[s.pos],t=today(),r=DATA[id];
     const n=(s.requeued[id]||0);if(n<3){s.requeued[id]=n+1;s.q.splice(Math.min(s.pos+5,s.q.length),0,id)}
   }
   if(isNew){if(S.s.newDay!==t){S.s.newDay=t;S.s.newCount=0}S.s.newCount++;S.s.t=Date.now()}
-  S.p[id]=[box,due,rc,wc,Date.now()];
+  S.p[id]=[box,due,rc,wc,Date.now(),ok?1:0,ok?((cur&&cur[6])||0):t];
   persist(r[6]);
   toast(msg,ok?'ok':'bad');
   s.pos++;s.flipped=false;renderStudy()}
@@ -469,15 +496,17 @@ function answer(ok){const s=session,id=s.q[s.pos],t=today(),r=DATA[id];
 function renderSummary(){const s=session;const missed=[...s.missed];
   $('#view').innerHTML=`<section class="panel" style="margin-top:4px">
     <div class="brand" style="font-size:28px">${s.right+s.wrong?['Félicitations','Bravo','Excellent travail','Super'][Math.floor(Math.random()*4)]:'À bientôt'}${S.s.name?', '+esc(S.s.name):''} !</div>
-    <div class="muted" style="margin-top:-8px">${s.right+s.wrong?(s.pos>=s.total&&s.q.length===s.pos?'Tu as terminé ta séance du jour.':'Séance terminée.'):'Aucune carte révisée.'}</div>
+    <div class="muted" style="margin-top:-8px">${s.practice&&s.right+s.wrong?'Entraînement terminé. Tes boîtes n’ont pas changé.':s.right+s.wrong?(s.pos>=s.total&&s.q.length===s.pos?'Tu as terminé ta séance du jour.':'Séance terminée.'):'Aucune carte révisée.'}</div>
     <div class="sum">
       <div class="stat"><b class="num" style="color:var(--ok)">${s.right}</b><span>right</span></div>
       <div class="stat"><b class="num" style="color:var(--bad)">${s.wrong}</b><span>wrong</span></div>
-      <div class="stat"><b class="num" style="color:var(--gold)">${s.learned}</b><span>new words</span></div>
+      ${s.practice?`<div class="stat"><b class="num">${s.total}</b><span>words</span></div>`:`<div class="stat"><b class="num" style="color:var(--gold)">${s.learned}</b><span>new words</span></div>`}
     </div>
     ${missed.length?`<div class="label">Words to watch · لغت‌های سخت</div><div class="missed list">${missed.map(rowHTML).join('')}</div>`:''}
+    ${s.practice&&missed.length?`<button class="reveal" id="again">Practice these ${missed.length} again</button>`:''}
     <button class="big" id="home">Back to my boxes</button></section>`;
-  bindRows();$('#home').onclick=()=>{session=null;render()}}
+  bindRows();$('#home').onclick=()=>{session=null;render()};
+  if($('#again'))$('#again').onclick=()=>startPractice(missed,s.practice)}
 
 /* ---------- words list ---------- */
 let q='',filt='all';
