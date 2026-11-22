@@ -411,8 +411,13 @@ function startPractice(ids,key){const q=shuffle(ids).slice(0,key==='seen'||key==
 /* ---------- session ---------- */
 function startSession(){const t=today();const due=[],fresh=[];
   for(let i=0;i<DATA.length;i++){if(!inLevels(i))continue;const p=S.p[i];if(p){if(p[1]<=t)due.push(i)}else fresh.push(i)}
-  due.sort((a,b)=>S.p[a][0]-S.p[b][0]||S.p[a][1]-S.p[b][1]);
-  const st=stats();const nw=fresh.slice(0,st.newToday);
+  // reviews: weakest box first, random order inside each box
+  const rk={};due.forEach(i=>rk[i]=Math.random());
+  due.sort((a,b)=>S.p[a][0]-S.p[b][0]||rk[a]-rk[b]);
+  // new words: keep level and unit order (A1 Unité 1 first), shuffle inside each unit every time
+  const groups=new Map();fresh.forEach(i=>{const k=DATA[i][6]+'-'+String(DATA[i][7]).padStart(2,'0');if(!groups.has(k))groups.set(k,[]);groups.get(k).push(i)});
+  const ordered=[...groups.keys()].sort().flatMap(k=>shuffle(groups.get(k)));
+  const st=stats();const nw=ordered.slice(0,st.newToday);
   const q=[];let a=0,b=0;while(a<due.length||b<nw.length){if(a<due.length)q.push(due[a++]);if(a<due.length)q.push(due[a++]);if(b<nw.length)q.push(nw[b++])}
   session={q,pos:0,flipped:false,again:new Set(),requeued:{},right:0,wrong:0,learned:0,missed:new Set(),total:q.length};
   render()}
