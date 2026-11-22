@@ -245,8 +245,7 @@ function salut(){const h=new Date().getHours();
   return h>=5&&h<12?['Bonjour','Good morning']:h<18&&h>=12?['Bon après-midi','Good afternoon']:h>=18&&h<22?['Bonsoir','Good evening']:['Bonne nuit','Good night']}
 function updateGreet(){const el=$('#greet');if(!el)return;const n=S.s.name;const [fr,en]=salut();
   if(!n){el.textContent='Édito Leitner';return}
-  el.innerHTML=`<span title="${en}">${fr},</span> <span style="white-space:nowrap"><span class="who">${esc(n)}</span><button class="edit" id="chg" aria-label="Change your name">edit</button></span>`;
-  $('#chg').onclick=()=>{editingName=true;session=null;render()}}
+  el.innerHTML=`<span title="${en}">${fr},</span> <span class="who">${esc(n)}</span>`}
 setInterval(updateGreet,60000);
 function settle(){if(!ready){ready=true;render()}}
 
