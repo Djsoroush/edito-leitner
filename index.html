@@ -205,6 +205,16 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .pill.new{color:var(--muted)} .pill.hard{color:var(--bad);border-color:var(--bad)} .pill.done{color:var(--gold);border-color:var(--gold)}
 .more{font-size:13px;color:var(--muted);text-align:center;padding:10px}
 
+.gear{border:1px solid var(--line);background:var(--surface);border-radius:14px;padding:13px;font-weight:600;width:100%;display:flex;gap:8px;justify-content:center;align-items:center;font-size:15px}
+.back{white-space:nowrap;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:10px;padding:7px 12px;font-weight:600;font-size:14px}
+.seg{display:inline-flex;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:2px;gap:2px}
+.seg button{border:0;background:none;border-radius:8px;padding:6px 10px;font-size:13px;font-weight:600;color:var(--muted);white-space:nowrap}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
+.sgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.sbtn{border:1px solid var(--line);background:var(--surface-2);border-radius:12px;padding:11px 12px;font-weight:600;font-size:14px;text-align:center;cursor:pointer;display:block}
+.namerow{display:flex;gap:8px}.namerow .search{flex:1}
+.resetbtn{border:0;background:var(--bad);color:#fff;border-radius:14px;padding:14px;font-weight:700;font-size:15px;width:100%}
+@media (max-width:380px){.sgrid{grid-template-columns:1fr}}
 .danger{border:1px solid var(--line);background:none;border-radius:10px;padding:8px 12px;font-size:13px;color:var(--bad)}
 .loading{padding:60px 0;text-align:center;color:var(--muted)}
 </style>
@@ -230,7 +240,7 @@ const H_ASP=new Set(['hockey','haricot','hamac','hamster','hall','hasard','haute
 
 let DATA=[]; // [w, ipa, pos, fa, exFr, exFa, level, unit, gender, emoji]
 const S={p:{}, s:{levels:['A1'],newPerDay:20,newDay:0,newCount:0,speakOnFlip:true,t:0}};
-let tab='study', session=null, ready=false, editingName=false;
+let view='home', tab='study', session=null, ready=false, editingName=false;
 function salut(){const h=new Date().getHours();
   return h>=5&&h<12?['Bonjour','Good morning']:h<18&&h>=12?['Bon après-midi','Good afternoon']:h>=18&&h<22?['Bonsoir','Good evening']:['Bonne nuit','Good night']}
 function updateGreet(){const el=$('#greet');if(!el)return;const n=S.s.name;const [fr,en]=salut();
@@ -292,10 +302,19 @@ function persist(cardLevel){saveLocal();markDirty(cardLevel?['p-'+cardLevel,'set
 
 /* ---------- speech ---------- */
 let voice=null;
-function pickVoice(){if(!('speechSynthesis' in window))return;const vs=speechSynthesis.getVoices();
-  voice=vs.find(v=>/^fr[-_]FR/i.test(v.lang)&&/Thomas|Amélie|Audrey|Google/i.test(v.name))||vs.find(v=>/^fr[-_]FR/i.test(v.lang))||vs.find(v=>/^fr/i.test(v.lang))||null}
+const VF=/Amélie|Amelie|Audrey|Aurélie|Aurelie|Marie|Chantal|Julie|Hortense|Denise|Céline|Celine|Léa|Lea|Virginie|Sylvie|Brigitte|Eloise|Vivienne|Ariane|Josephine|Coralie|Yvette|Charline|Google français|female|femme/i;
+const VM=/Thomas|Daniel|Jacques|Nicolas|Paul|Henri|Claude|Mathieu|R[ée]mi|Antoine|Gérard|Gerard|Alain|Fabrice|Guillaume|J[ée]r[ôo]me|Maurice|Yves|F[ée]lix|Sylvain|Jean|\bmale\b|homme/i;
+let voiceMissing=false;
+function pickVoice(){if(!('speechSynthesis' in window))return;const fr=speechSynthesis.getVoices().filter(v=>/^fr/i.test(v.lang));
+  const g=S.s.voiceGender==='m'?VM:VF, other=S.s.voiceGender==='m'?VF:VM;
+  const pref=v=>(/^fr[-_]FR/i.test(v.lang)?0:1);
+  const match=fr.filter(v=>g.test(v.name)&&!(S.s.voiceGender==='m'&&VF.test(v.name))).sort((a,b)=>pref(a)-pref(b));
+  voiceMissing=fr.length>0&&!match.length;
+  voice=match[0]||fr.filter(v=>!other.test(v.name)).sort((a,b)=>pref(a)-pref(b))[0]||fr.sort((a,b)=>pref(a)-pref(b))[0]||null}
+function voiceInfo(){pickVoice();return {name:voice?voice.name:'',missing:voiceMissing}}
+function applyPrefs(){pickVoice();const t=S.s.theme;if(t==='light'||t==='dark')document.documentElement.dataset.theme=t;else delete document.documentElement.dataset.theme}
 if('speechSynthesis' in window){pickVoice();speechSynthesis.onvoiceschanged=pickVoice}
-function say(text,rate){if(!('speechSynthesis' in window)||!text)return;try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang='fr-FR';if(voice)u.voice=voice;u.rate=rate||0.9;speechSynthesis.speak(u)}catch(e){}}
+function say(text,rate){if(!('speechSynthesis' in window)||!text)return;try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang='fr-FR';if(voice)u.voice=voice;u.rate=(rate||0.9)*(S.s.slow?0.75:1);speechSynthesis.speak(u)}catch(e){}}
 
 /* ---------- word helpers ---------- */
 function article(w,g){if(!g)return '';const lw=w.toLowerCase();
@@ -331,6 +350,7 @@ function stats(){const t=today(),b=[0,0,0,0,0,0,0];let due=0;
 function render(){const v=$('#view');updateGreet();$('#credit').hidden=true;
   if(session){renderStudy();return}
   if(ready&&(!S.s.name||editingName)){renderName();return}
+  if(view==='settings'){renderSettings();return}
   v.innerHTML=`<div class="tabs" role="tablist">
       <button role="tab" aria-selected="${tab==='study'}" data-tab="study">Study · مرور</button>
       <button role="tab" aria-selected="${tab==='words'}" data-tab="words">Words · لغات</button></div>
@@ -371,17 +391,55 @@ function renderHome(){const PL=practiceLists();$('#credit').hidden=false;const s
       <div class="boxes">${st.b.map((n,i)=>`<div class="bx"><div class="n num">${n}</div><div class="bar"><div class="fill" style="height:${Math.round(n/max*100)}%;${i===0?'background:var(--muted);opacity:.35':i===6?'background:var(--gold)':`opacity:${.35+i*.13}`}"></div></div><div class="t">${names[i]}${i>=1&&i<=5?`<br>${INT[i]}d`:''}</div></div>`).join('')}</div>
       <div class="levels">${LEVELS.map(lv=>{const [n,l]=lvCount(lv);return `<div class="lvl"><b>${lv}</b><div class="track"><i style="width:${(l/n*100).toFixed(1)}%"></i></div><span class="muted num" style="font-size:12px">${l} / ${n} in Box 4+</span></div>`}).join('')}</div>
     </section>
-    <section class="panel">
-      <div class="row"><span>New words per day</span>
-        <div class="stepper"><button id="dn" aria-label="Fewer">−</button><output class="num" id="npd">${S.s.newPerDay}</output><button id="up" aria-label="More">+</button></div></div>
-      <label class="toggle"><input type="checkbox" id="sof" ${S.s.speakOnFlip?'checked':''}> Say the word aloud when I flip the card</label>
-      <div class="row"><span class="muted" style="font-size:13px">Progress is saved on this device. Use Back up / Restore to move it to another device.</span>
-        <button class="danger" id="reset">Reset progress</button></div>
-      <div class="row" style="justify-content:flex-start"><button class="chip" id="bk">Back up progress</button><label class="chip" for="rs" style="cursor:pointer">Restore from backup</label><input type="file" id="rs" accept=".json,application/json" hidden></div>
-    </section></div>`;
+    <button class="gear" id="openSettings"><span aria-hidden="true">⚙️</span> Settings · تنظیمات</button></div>`;
   document.querySelectorAll('[data-lv]').forEach(b=>b.onclick=()=>{const l=b.dataset.lv;const set=new Set(S.s.levels);set.has(l)?set.delete(l):set.add(l);if(!set.size)return;S.s.levels=LEVELS.filter(x=>set.has(x));S.s.t=Date.now();persist();render()});
   $('#start').onclick=startSession;
   document.querySelectorAll('[data-pr]').forEach(b=>b.onclick=()=>startPractice(PL[b.dataset.pr],b.dataset.pr));
+  $('#openSettings').onclick=()=>{view='settings';render()}}
+
+/* ---------- settings ---------- */
+function renderSettings(){$('#credit').hidden=true;const vs=voiceInfo();
+  const seg=(id,opts,cur)=>`<div class="seg" role="group">${opts.map(([v,l])=>`<button data-${id}="${v}" aria-pressed="${cur===v}">${l}</button>`).join('')}</div>`;
+  $('#view').innerHTML=`<div style="display:flex;flex-direction:column;gap:14px">
+    <div class="row"><button class="x back" id="closeSettings">← Back</button><div class="brand" style="font-size:20px">⚙️ Settings · تنظیمات</div></div>
+    <section class="panel">
+      <div class="label">Your name · نام</div>
+      <div class="namerow"><input class="search" id="nm2" maxlength="30" value="${esc(S.s.name||'')}" autocomplete="given-name" placeholder="Your first name"><button class="chip" id="saveNm2">Save</button></div>
+    </section>
+    <section class="panel">
+      <div class="label">Voice · صدا</div>
+      <div class="row"><span>Voice</span>${seg('vg',[['f','👩 Woman'],['m','👨 Man']],S.s.voiceGender||'f')}</div>
+      ${vs.missing?`<p class="muted" style="margin:0;font-size:12px">This device has no French ${S.s.voiceGender==='m'?'male':'female'} voice, so the default voice is used.</p>`:''}
+      <div class="row"><span>Speed</span>${seg('vs',[['slow','Slow'],['normal','Normal']],S.s.slow?'slow':'normal')}</div>
+      <label class="toggle"><input type="checkbox" id="sof" ${S.s.speakOnFlip?'checked':''}> Say the word aloud when I flip the card</label>
+      <button class="sbtn" id="testVoice">🔊 Test the voice${vs.name?` · <span class="muted">${esc(vs.name)}</span>`:''}</button>
+    </section>
+    <section class="panel">
+      <div class="label">Study · مطالعه</div>
+      <div class="row"><span>New words per day</span>
+        <div class="stepper"><button id="dn" aria-label="Fewer">−</button><output class="num" id="npd">${S.s.newPerDay}</output><button id="up" aria-label="More">+</button></div></div>
+    </section>
+    <section class="panel">
+      <div class="label">Appearance · ظاهر</div>
+      <div class="row"><span>Theme</span>${seg('th',[['system','Auto'],['light','☀️ Light'],['dark','🌙 Dark']],S.s.theme||'system')}</div>
+    </section>
+    <section class="panel">
+      <div class="label">Your progress · پیشرفت</div>
+      <p class="muted" style="margin:0;font-size:13px">Progress is saved on this device. Back it up to move it to another phone or computer.</p>
+      <div class="sgrid"><button class="sbtn" id="bk">💾 Back up</button><label class="sbtn" for="rs">📂 Restore</label></div>
+      <input type="file" id="rs" accept=".json,application/json" hidden>
+    </section>
+    <button class="resetbtn" id="reset">Reset progress · پاک کردن پیشرفت</button>
+    <p class="credit" style="margin:0">Édito Leitner · Made by <b>Soroush</b></p>
+  </div>`;
+  $('#closeSettings').onclick=()=>{view='home';render()};
+  const saveName=()=>{const v=$('#nm2').value.trim().replace(/\s+/g,' ').slice(0,30);if(!v)return;S.s.name=v;S.s.t=Date.now();persist();updateGreet();toast('Name saved','ok')};
+  $('#saveNm2').onclick=saveName;$('#nm2').onkeydown=e=>{if(e.key==='Enter')saveName()};
+  const set=(k,v)=>{S.s[k]=v;S.s.t=Date.now();persist();applyPrefs();render()};
+  document.querySelectorAll('[data-vg]').forEach(b=>b.onclick=()=>{set('voiceGender',b.dataset.vg);say('Bonjour !',0.9)});
+  document.querySelectorAll('[data-vs]').forEach(b=>b.onclick=()=>set('slow',b.dataset.vs==='slow'));
+  document.querySelectorAll('[data-th]').forEach(b=>b.onclick=()=>set('theme',b.dataset.th));
+  $('#testVoice').onclick=()=>say('Bonjour ! Bienvenue dans Édito Leitner.',0.9);
   const step=d=>{S.s.newPerDay=Math.max(0,Math.min(100,S.s.newPerDay+d));S.s.t=Date.now();persist();render()};
   $('#dn').onclick=()=>step(-5);$('#up').onclick=()=>step(5);
   $('#sof').onchange=e=>{S.s.speakOnFlip=e.target.checked;S.s.t=Date.now();persist()};
@@ -395,7 +453,7 @@ function renderHome(){const PL=practiceLists();$('#credit').hidden=false;const s
   const r=$('#reset');r.onclick=()=>{if(r.dataset.armed){
       const t=Date.now();for(const k in S.p){if(inLevels(+k))delete S.p[k]}S.s.newCount=0;S.s.t=t;saveLocal();
       if(db){S.s.levels.forEach(l=>dirty.add('p-'+l));markDirty(['settings'])}render();toast('Progress reset for '+S.s.levels.join(', '))}
-    else{r.dataset.armed=1;r.textContent='Tap again to reset '+S.s.levels.join(' + ');setTimeout(()=>{if(r.isConnected){delete r.dataset.armed;r.textContent='Reset progress'}},4000)}}}
+    else{r.dataset.armed=1;r.textContent='Tap again to reset '+S.s.levels.join(' + ');setTimeout(()=>{if(r.isConnected){delete r.dataset.armed;r.textContent='Reset progress · پاک کردن پیشرفت'}},4000)}}}
 
 /* ---------- practice (extra review, boxes never change) ---------- */
 const dayOf=ts=>{const d=new Date(ts);return Math.floor((ts-d.getTimezoneOffset()*60000)/864e5)};
@@ -545,7 +603,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&dirty.size
 if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}))}
 window.addEventListener('online',()=>setSync('on','Saved on phone'));window.addEventListener('offline',()=>setSync('on','Offline · saved'));
 /* ---------- boot ---------- */
-loadLocal();
+loadLocal();applyPrefs();
 fetch('vocab.json').then(r=>r.json()).then(d=>{DATA=d;render();startSync()})
   .catch(()=>{$('#view').innerHTML='<div class="loading">The word list could not load. Reload the page to try again.</div>'});
 </script>
