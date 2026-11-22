@@ -186,7 +186,7 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .kbd{font-size:12px;color:var(--muted);text-align:center}
 @media (hover:none){.kbd{display:none}}
 
-.toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);opacity:0;background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-weight:600;font-size:14px;transition:.25s;pointer-events:none;max-width:calc(100% - 32px);text-align:center;z-index:5}
+.toast{position:fixed;left:50%;top:calc(10px + env(safe-area-inset-top,0px));transform:translate(-50%,-12px);opacity:0;background:var(--ink);color:var(--bg);padding:7px 14px;border-radius:999px;font-weight:600;font-size:13px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:.2s;pointer-events:none;max-width:calc(100% - 32px);text-align:center;z-index:20;box-shadow:var(--shadow)}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 .toast.ok{background:var(--ok);color:#fff} .toast.bad{background:var(--bad);color:#fff}
 
@@ -471,21 +471,19 @@ function flip(){if(!session||session.flipped)return;session.flipped=true;renderS
   if(S.s.speakOnFlip)say(spoken(session.q[session.pos]),0.85)}
 
 function answer(ok){const s=session,id=s.q[s.pos],t=today(),r=DATA[id];
-  if(s.practice){if(ok){s.right++;toast('✓ Correct · boxes unchanged','ok')}else{s.wrong++;s.missed.add(id);toast('✗ Missed · it comes back in a few cards','bad');
-      const n=(s.requeued[id]||0);if(n<2){s.requeued[id]=n+1;s.q.splice(Math.min(s.pos+4,s.q.length),0,id)}}
+  if(s.practice){if(ok){s.right++;toast('✓ Correct · boxes unchanged','ok')}else{s.wrong++;s.missed.add(id);toast('✗ Missed · boxes unchanged','bad')}
     s.pos++;s.flipped=false;renderStudy();return}
   const cur=S.p[id],isNew=!cur,again=s.again.has(id);
   let box,due,msg;
   const rc=(cur?cur[2]:0)+(ok?1:0),wc=(cur?cur[3]:0)+(ok?0:1);
   if(ok){
-    if(isNew){box=2;due=t+INT[2];msg='✓ New word → Box 2 · back in 2 days'}
+    if(isNew){box=2;due=t+INT[2];msg='✓ Box 2 · back in 2 days'}
     else if(again){box=1;due=t+1;msg='✓ Got it · Box 1 · back tomorrow'}
-    else{box=Math.min(cur[0]+1,6);due=box===6?t+MASTER_GAP:t+INT[box];msg=box===6?'★ Learned! Out of the box':`✓ Box ${box} · back in ${INT[box]} day${INT[box]>1?'s':''}`}
+    else{box=Math.min(cur[0]+1,6);due=box===6?t+MASTER_GAP:t+INT[box];msg=box===6?'★ Learned!':`✓ Box ${box} · back in ${INT[box]} day${INT[box]>1?'s':''}`}
     s.right++;if(isNew)s.learned++;
   }else{
-    box=1;due=t;msg=isNew?'✗ New word → Box 1 · you’ll see it again soon':'✗ Back to Box 1 · coming back in a few cards';
+    box=1;due=t+1;msg=isNew?'✗ Box 1 · in Today’s mistakes':'✗ Back to Box 1 · in Today’s mistakes';
     s.wrong++;s.missed.add(id);s.again.add(id);if(isNew)s.learned++;
-    const n=(s.requeued[id]||0);if(n<3){s.requeued[id]=n+1;s.q.splice(Math.min(s.pos+5,s.q.length),0,id)}
   }
   if(isNew){if(S.s.newDay!==t){S.s.newDay=t;S.s.newCount=0}S.s.newCount++;S.s.t=Date.now()}
   S.p[id]=[box,due,rc,wc,Date.now(),ok?1:0,ok?((cur&&cur[6])||0):t];
@@ -531,7 +529,7 @@ function renderWords(){
   draw()}
 
 /* ---------- toast & keys ---------- */
-let tt;function toast(m,c){const el=$('#toast');el.textContent=m;el.className='toast show '+(c||'');clearTimeout(tt);tt=setTimeout(()=>el.className='toast',1900)}
+let tt;function toast(m,c){const el=$('#toast');el.textContent=m;el.className='toast show '+(c||'');clearTimeout(tt);tt=setTimeout(()=>el.className='toast',1400)}
 document.addEventListener('keydown',e=>{if(!session||e.target.tagName==='INPUT')return;
   if(e.key===' '||e.key==='Enter'){e.preventDefault();session.flipped?null:flip()}
   else if(session.flipped&&(e.key==='ArrowLeft'||e.key==='1'))answer(false)
