@@ -182,6 +182,8 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .answers button{border:0;border-radius:14px;padding:15px 8px;font-weight:700;font-size:16px;color:#fff;display:flex;flex-direction:column;align-items:center;gap:2px}
 .answers .no{background:var(--bad)} .answers .yes{background:var(--ok)}
 .answers small{font-weight:500;font-size:12px;opacity:.9;font-family:var(--f-fa)}
+.card{cursor:default}
+#flip{border:2px solid #f28c28!important}
 .reveal{border:1px solid var(--line);background:var(--surface);border-radius:14px;padding:15px;font-weight:700;font-size:16px;width:100%}
 .kbd{font-size:12px;color:var(--muted);text-align:center}
 @media (hover:none){.kbd{display:none}}
@@ -489,7 +491,7 @@ function renderStudy(){const v=$('#view');const s=session;
   const done=s.pos,pct=Math.round(done/s.q.length*100);
   v.innerHTML=`<div style="display:flex;flex-direction:column;gap:14px">
     <div class="studybar"><button class="x" id="quit">✕ Stop</button><div class="prog"><i style="width:${pct}%"></i></div><span class="count num">${done} / ${s.q.length}</span></div>
-    <div class="card${s.flipped?' flipped':''}" id="card" tabindex="0" aria-label="Flashcard, tap to flip">
+    <div class="card${s.flipped?' flipped':''}" id="card" tabindex="0" aria-label="Flashcard">
       <div class="face front" aria-hidden="${s.flipped}">
         ${status}
         <div class="mid">
@@ -497,7 +499,6 @@ function renderStudy(){const v=$('#view');const s=session;
           ${r[1]?`<div class="ipa">/${esc(r[1])}/</div>`:''}
           <button class="speak" data-say="w">${SPK} Listen</button>
         </div>
-        <div class="hint">Tap the card to see the answer</div>
       </div>
       <div class="face back" aria-hidden="${!s.flipped}">
         <div class="head">
@@ -521,7 +522,6 @@ function renderStudy(){const v=$('#view');const s=session;
                :`<button class="reveal" id="flip">Show answer</button>`}
     <div class="kbd">Space: flip · ←: didn't know · →: knew it</div></div>`;
   const card=$('#card');
-  card.onclick=e=>{if(e.target.closest('[data-say]'))return;flip()};
   v.querySelectorAll('[data-sayt]').forEach(b=>b.onclick=e=>{e.stopPropagation();say(b.dataset.sayt,0.85)});
   v.querySelectorAll('[data-say]').forEach(b=>b.onclick=e=>{e.stopPropagation();say(b.dataset.say==='ex'?r[4]:spoken(id),b.dataset.say==='ex'?0.95:0.85)});
   $('#quit').onclick=()=>{session.q=session.q.slice(0,session.pos);renderSummary()};
